@@ -1,17 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Socket.io Test</title>
+  <title>PikaTalk Chat</title>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 </head>
 <body>
-  <h1>Socket.io Server is Running!</h1>
+  <h1>PikaTalk Chat Test</h1>
+  <input id="nameInput" placeholder="Enter your name" />
+  <button onclick="joinChat()">Join Chat</button>
+  <div id="chat" style="margin-top:20px;"></div>
+  <input id="msgInput" placeholder="Type message" />
+  <button onclick="sendMsg()">Send</button>
+
   <script>
     const socket = io();
 
-    socket.on('connect', () => {
-      console.log('Connected to server', socket.id);
+    function joinChat() {
+      const name = document.getElementById('nameInput').value;
+      if(name) {
+        socket.emit('new-user-joined', name);
+      }
+    }
+
+    socket.on('chat-history', (messages) => {
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML = '';
+      messages.forEach(m => {
+        chatDiv.innerHTML += `<p><b>${m.name}:</b> ${m.message}</p>`;
+      });
     });
+
+    socket.on('receive', (msgObj) => {
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML += `<p><b>${msgObj.name}:</b> ${msgObj.message}</p>`;
+    });
+
+    function sendMsg() {
+      const msgInput = document.getElementById('msgInput');
+      const message = msgInput.value;
+      if(message) {
+        socket.emit('send', message);
+        msgInput.value = '';
+      }
+    }
   </script>
 </body>
 </html>
